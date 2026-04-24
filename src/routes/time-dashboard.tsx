@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { PageHeader, TableScroll, EmptyState } from "@/components/AppShell";
@@ -32,6 +32,8 @@ function isIsoDate(v: unknown): v is string {
 function TimeDashboardPage() {
   const [q, setQ] = useState("");
   const navigate = useNavigate();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const showingUserDetail = pathname.startsWith("/time-dashboard/") && pathname !== "/time-dashboard";
 
   const search = Route.useSearch();
 
@@ -146,6 +148,9 @@ function TimeDashboardPage() {
 
   return (
     <div className="ops-dense">
+      {showingUserDetail ? <Outlet /> : null}
+      {!showingUserDetail ? (
+        <>
       <PageHeader
         eyebrow="People"
         title="Time Dashboard"
@@ -228,27 +233,29 @@ function TimeDashboardPage() {
                   key={e.employee_id}
                   className="hover:bg-muted/40 cursor-pointer"
                   onClick={() => {
-                    const qs = new URLSearchParams();
-                    if (isIsoDate(start)) qs.set("start", start);
-                    if (isIsoDate(end)) qs.set("end", end);
-                    const url = `/time-dashboard/${encodeURIComponent(e.employee_id)}?${qs.toString()}`;
-                    if (typeof window !== "undefined") window.location.href = url;
-                    else navigate({ to: "/time-dashboard" });
+                    navigate({
+                      to: "/time-dashboard/$userId",
+                      params: { userId: e.employee_id },
+                      search: {
+                        start: isIsoDate(start) ? start : undefined,
+                        end: isIsoDate(end) ? end : undefined,
+                      },
+                    });
                   }}
                 >
                   <td>
                     <div className="font-medium text-[13px]">
-                      <a
-                        href={`/time-dashboard/${encodeURIComponent(e.employee_id)}?${(() => {
-                          const qs = new URLSearchParams();
-                          if (isIsoDate(start)) qs.set("start", start);
-                          if (isIsoDate(end)) qs.set("end", end);
-                          return qs.toString();
-                        })()}`}
+                      <Link
+                        to="/time-dashboard/$userId"
+                        params={{ userId: e.employee_id }}
+                        search={{
+                          start: isIsoDate(start) ? start : undefined,
+                          end: isIsoDate(end) ? end : undefined,
+                        }}
                         className="hover:underline"
                       >
                         {e.name}
-                      </a>
+                      </Link>
                     </div>
                     <div className="text-[11px] text-muted-foreground truncate max-w-[280px]">{e.email}</div>
                   </td>
@@ -260,6 +267,8 @@ function TimeDashboardPage() {
           </table>
         </TableScroll>
       </div>
+        </>
+      ) : null}
     </div>
   );
 }

@@ -170,7 +170,7 @@ function TimeDoctorEmployeePage() {
           <EmptyState title="No data" description="No response returned for this employee." />
         )}
 
-        {data.warnings?.length ? (
+        {data?.warnings?.length ? (
           <div className="surface-card p-4">
             <div className="text-[11px] uppercase tracking-[0.1em] text-muted-foreground font-medium mb-2">
               Warnings
