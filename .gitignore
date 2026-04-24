@@ -33,3 +33,6 @@ dist-ssr
 
 # Secrets
 .env
+
+# Alyson Notetaker local data
+.cache/alyson-notetaker/

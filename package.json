@@ -4,8 +4,9 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "vite dev",
-    "dev:ops": "dotenv -e .env -- concurrently -n alysonhr,alyson-notetaker -c \"cyan,magenta\" \"cross-env ALYSON_NOTETAKER_BASE_URL=http://localhost:3003 VITE_ALYSON_NOTETAKER_BASE_URL=http://localhost:3003 vite dev\" \"cross-env PORT=3003 npm run dev --prefix ../test-botv2\"",
+    "dev": "dotenv -e .env -- concurrently -n alysonhr,alyson-notetaker -c \"cyan,magenta\" \"vite dev\" \"cross-env ALYSON_NOTETAKER_PORT=3003 node --watch tools/alyson-notetaker/server.cjs\"",
+    "dev:web": "vite dev",
+    "dev:ops": "dotenv -e .env -- concurrently -n alysonhr,alyson-notetaker -c \"cyan,magenta\" \"cross-env ALYSON_NOTETAKER_BASE_URL=http://localhost:3003 VITE_ALYSON_NOTETAKER_BASE_URL=http://localhost:3003 vite dev\" \"cross-env ALYSON_NOTETAKER_PORT=3003 node --watch tools/alyson-notetaker/server.cjs\"",
     "build": "vite build",
     "build:dev": "vite build --mode development",
     "preview": "vite preview",

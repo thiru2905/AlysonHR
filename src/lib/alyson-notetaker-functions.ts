@@ -16,7 +16,7 @@ function baseUrl() {
     // backward compat
     process.env.TEST_BOTV2_BASE_URL ||
     process.env.VITE_TEST_BOTV2_BASE_URL ||
-    "http://localhost:3002";
+    "http://localhost:3003";
   return String(raw).replace(/\/$/, "");
 }
 
