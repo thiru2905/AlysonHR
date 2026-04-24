@@ -5,9 +5,11 @@ import { PageHeader, EmptyState } from "@/components/AppShell";
 import { PageSkeleton } from "@/components/Skeleton";
 import { fmtCurrency } from "@/lib/format";
 import { useState } from "react";
-import { Search, Users, LayoutGrid, Network } from "lucide-react";
+import { Search, Users, LayoutGrid, Network, Plus } from "lucide-react";
 import { OrgChart } from "@/components/OrgChart";
 import { EmployeeDrawer } from "@/components/drawers/EmployeeDrawer";
+import { CreateUserDrawer } from "@/components/drawers/CreateUserDrawer";
+import { useAuth } from "@/lib/auth";
 
 export const Route = createFileRoute("/team")({
   head: () => ({ meta: [{ title: "Team — Alyson HR" }] }),
@@ -20,6 +22,8 @@ function TeamPage() {
   const [dept, setDept] = useState<string>("all");
   const [view, setView] = useState<"directory" | "chart">("directory");
   const [picked, setPicked] = useState<EmployeeFull | null>(null);
+  const [createOpen, setCreateOpen] = useState(false);
+  const auth = useAuth();
 
   if (isLoading || !data) return <PageSkeleton />;
 
@@ -36,19 +40,30 @@ function TeamPage() {
         title="Team directory"
         description="Browse, filter, and drill into every active employee across the organization."
         actions={
-          <div className="inline-flex rounded-md border border-border p-0.5 bg-paper">
-            <button
-              onClick={() => setView("directory")}
-              className={"h-7 px-2.5 rounded text-[11.5px] font-medium flex items-center gap-1.5 " + (view === "directory" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
-            >
-              <LayoutGrid className="h-3 w-3" />Directory
-            </button>
-            <button
-              onClick={() => setView("chart")}
-              className={"h-7 px-2.5 rounded text-[11.5px] font-medium flex items-center gap-1.5 " + (view === "chart" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
-            >
-              <Network className="h-3 w-3" />Org chart
-            </button>
+          <div className="flex items-center gap-2">
+            {auth.hasRole("super_admin") && (
+              <button
+                onClick={() => setCreateOpen(true)}
+                className="h-7 px-2.5 rounded-md bg-foreground text-background text-[11.5px] font-medium inline-flex items-center gap-1.5"
+              >
+                <Plus className="h-3.5 w-3.5" />
+                Create user
+              </button>
+            )}
+            <div className="inline-flex rounded-md border border-border p-0.5 bg-paper">
+              <button
+                onClick={() => setView("directory")}
+                className={"h-7 px-2.5 rounded text-[11.5px] font-medium flex items-center gap-1.5 " + (view === "directory" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
+              >
+                <LayoutGrid className="h-3 w-3" />Directory
+              </button>
+              <button
+                onClick={() => setView("chart")}
+                className={"h-7 px-2.5 rounded text-[11.5px] font-medium flex items-center gap-1.5 " + (view === "chart" ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground")}
+              >
+                <Network className="h-3 w-3" />Org chart
+              </button>
+            </div>
           </div>
         }
       />
@@ -104,6 +119,7 @@ function TeamPage() {
       </div>
 
       <EmployeeDrawer employee={picked} onClose={() => setPicked(null)} />
+      <CreateUserDrawer open={createOpen} onClose={() => setCreateOpen(false)} />
     </div>
   );
 }

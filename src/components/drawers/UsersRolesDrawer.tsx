@@ -6,11 +6,22 @@ import { toast } from "sonner";
 import { ROLE_LABEL, type AppRole } from "@/lib/auth";
 import { TextInput, Field, GhostBtn } from "@/components/forms/FormField";
 import { Search, Plus, Trash2 } from "lucide-react";
+import { deleteUserAsAdmin, linkUserToEmployeeAsAdmin } from "@/lib/admin-functions";
 
 const ROLES: AppRole[] = ["super_admin", "ceo", "finance", "hr", "manager", "employee"];
 
 export function UsersRolesDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const [q, setQ] = useState("");
+
+  const { data: employees } = useQuery({
+    queryKey: ["employees-mini"],
+    queryFn: async () => {
+      const { data, error } = await supabase.from("employees").select("id, full_name, email").order("full_name");
+      if (error) throw error;
+      return data ?? [];
+    },
+    enabled: open,
+  });
 
   const { data } = useQuery({
     queryKey: ["users-roles"],
@@ -42,7 +53,7 @@ export function UsersRolesDrawer({ open, onClose }: { open: boolean; onClose: ()
 
         <div className="space-y-2">
           {filtered.map((u) => (
-            <UserRow key={u.id} user={u} />
+            <UserRow key={u.id} user={u} employees={employees ?? []} />
           ))}
           {!filtered.length && <div className="py-6 text-center text-[13px] text-muted-foreground">No users match.</div>}
         </div>
@@ -51,9 +62,16 @@ export function UsersRolesDrawer({ open, onClose }: { open: boolean; onClose: ()
   );
 }
 
-function UserRow({ user }: { user: { id: string; display_name: string | null; roles: AppRole[] } }) {
+function UserRow({
+  user,
+  employees,
+}: {
+  user: { id: string; display_name: string | null; roles: AppRole[]; employee_id?: string | null };
+  employees: Array<{ id: string; full_name: string; email: string }>;
+}) {
   const qc = useQueryClient();
   const [adding, setAdding] = useState<AppRole>("employee");
+  const [emp, setEmp] = useState<string>(user.employee_id ?? "");
 
   const add = useMutation({
     mutationFn: async (role: AppRole) => {
@@ -80,9 +98,94 @@ function UserRow({ user }: { user: { id: string; display_name: string | null; ro
 
   const available = ROLES.filter((r) => !user.roles.includes(r));
 
+  const del = useMutation({
+    mutationFn: async () => {
+      const { data: sess, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr) throw sessErr;
+      const accessToken = sess.session?.access_token;
+      if (!accessToken) throw new Error("Not signed in");
+
+      await deleteUserAsAdmin({ data: { accessToken, userId: user.id } });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users-roles"] });
+      toast.success("User deleted");
+    },
+    onError: async (e: any) => {
+      if (e instanceof Response) {
+        toast.error(await e.text());
+        return;
+      }
+      toast.error(e?.message ?? "Failed");
+    },
+  });
+
+  const link = useMutation({
+    mutationFn: async () => {
+      const { data: sess, error: sessErr } = await supabase.auth.getSession();
+      if (sessErr) throw sessErr;
+      const accessToken = sess.session?.access_token;
+      if (!accessToken) throw new Error("Not signed in");
+
+      await linkUserToEmployeeAsAdmin({
+        data: { accessToken, userId: user.id, employeeId: emp ? emp : null },
+      });
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["users-roles"] });
+      toast.success("Employee link updated");
+    },
+    onError: async (e: any) => {
+      if (e instanceof Response) {
+        toast.error(await e.text());
+        return;
+      }
+      toast.error(e?.message ?? "Failed");
+    },
+  });
+
   return (
     <div className="surface-card p-3 space-y-2">
-      <div className="font-medium text-[13px]">{user.display_name ?? "Unnamed"}</div>
+      <div className="flex items-start justify-between gap-3">
+        <div className="font-medium text-[13px]">{user.display_name ?? "Unnamed"}</div>
+        <button
+          type="button"
+          onClick={() => {
+            const ok = window.confirm(
+              "Delete this user? This will remove their login and delete their profile/roles."
+            );
+            if (ok) del.mutate();
+          }}
+          disabled={del.isPending}
+          className="h-7 px-2 rounded-md border border-destructive/40 text-destructive text-[11.5px] hover:bg-destructive/10"
+        >
+          Delete
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2 flex-wrap">
+        <select
+          value={emp}
+          onChange={(e) => setEmp(e.target.value)}
+          className="h-7 px-2 rounded-md border border-border bg-background text-[12px] min-w-[240px]"
+        >
+          <option value="">— Not linked to employee —</option>
+          {employees.map((e) => (
+            <option key={e.id} value={e.id}>
+              {e.full_name} ({e.email})
+            </option>
+          ))}
+        </select>
+        <GhostBtn type="button" onClick={() => link.mutate()} className="h-7 text-[11.5px]" disabled={link.isPending}>
+          Save link
+        </GhostBtn>
+        {!user.employee_id && (
+          <span className="text-[11px] text-muted-foreground">
+            Leave requests will fail until linked.
+          </span>
+        )}
+      </div>
+
       <div className="flex flex-wrap gap-1.5">
         {user.roles.length === 0 && <span className="text-[11px] text-muted-foreground italic">No roles</span>}
         {user.roles.map((r) => (

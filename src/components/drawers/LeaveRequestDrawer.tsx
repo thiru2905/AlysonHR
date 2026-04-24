@@ -4,9 +4,28 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Field, TextInput, TextArea, Select, PrimaryBtn, GhostBtn, FormFooter } from "@/components/forms/FormField";
+import { useAuth } from "@/lib/auth";
 
 export function LeaveRequestDrawer({ open, onClose }: { open: boolean; onClose: () => void }) {
   const qc = useQueryClient();
+  const auth = useAuth();
+  const canRequestForOthers = auth.hasAnyRole(["super_admin", "hr", "manager"]);
+
+  const { data: myProfile } = useQuery({
+    queryKey: ["my-profile", auth.user?.id],
+    queryFn: async () => {
+      if (!auth.user?.id) return null;
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("id, employee_id")
+        .eq("id", auth.user.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+    enabled: open && !!auth.user?.id,
+  });
+
   const { data: types } = useQuery({
     queryKey: ["leave-types"],
     queryFn: async () => {
@@ -21,7 +40,7 @@ export function LeaveRequestDrawer({ open, onClose }: { open: boolean; onClose: 
       const { data } = await supabase.from("employees").select("id, full_name").order("full_name");
       return data ?? [];
     },
-    enabled: open,
+    enabled: open && canRequestForOthers,
   });
 
   const [empId, setEmpId] = useState("");
@@ -32,15 +51,26 @@ export function LeaveRequestDrawer({ open, onClose }: { open: boolean; onClose: 
   const [reason, setReason] = useState("");
 
   useEffect(() => {
-    if (open && emps?.length && !empId) setEmpId(emps[0].id);
+    // Regular employees can only request for themselves (RLS requires employee_id to match profile.employee_id)
+    if (open && !canRequestForOthers && myProfile?.employee_id) setEmpId(myProfile.employee_id);
+
+    // Admin/HR/Manager can request on behalf of others
+    if (open && canRequestForOthers && emps?.length && !empId) setEmpId(emps[0].id);
     if (open && types?.length && !typeId) setTypeId(types[0].id);
-  }, [open, emps, types, empId, typeId]);
+  }, [open, emps, types, empId, typeId, canRequestForOthers, myProfile?.employee_id]);
 
   const days =
     (new Date(end).getTime() - new Date(start).getTime()) / 86400000 + 1;
 
   const create = useMutation({
     mutationFn: async () => {
+      if (!empId) {
+        throw new Error(
+          canRequestForOthers
+            ? "Please select an employee"
+            : "Your account is not linked to an employee record. Ask an admin to link your user to an employee."
+        );
+      }
       const { error } = await supabase.from("leave_requests").insert({
         employee_id: empId,
         leave_type_id: typeId,
@@ -71,13 +101,15 @@ export function LeaveRequestDrawer({ open, onClose }: { open: boolean; onClose: 
         }}
       >
         <div className="p-5 space-y-4 flex-1">
-          <Field label="Employee">
-            <Select value={empId} onChange={(e) => setEmpId(e.target.value)}>
-              {(emps ?? []).map((e: any) => (
-                <option key={e.id} value={e.id}>{e.full_name}</option>
-              ))}
-            </Select>
-          </Field>
+          {canRequestForOthers && (
+            <Field label="Employee">
+              <Select value={empId} onChange={(e) => setEmpId(e.target.value)}>
+                {(emps ?? []).map((e: any) => (
+                  <option key={e.id} value={e.id}>{e.full_name}</option>
+                ))}
+              </Select>
+            </Field>
+          )}
           <Field label="Leave type">
             <Select value={typeId} onChange={(e) => setTypeId(e.target.value)}>
               {(types ?? []).map((t: any) => (

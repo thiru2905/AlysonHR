@@ -4,6 +4,7 @@ import {
   LayoutDashboard, Users, DollarSign, TrendingUp, Gift, PieChart, Calendar,
   Clock, FileText, GitBranch, BarChart3, Shield, HelpCircle, Sparkles,
   Moon, Sun, ChevronsLeft, ChevronsRight, LogOut, Search, Bot, Menu, X, Send,
+  Captions,
 } from "lucide-react";
 import { useAuth, ROLE_LABEL, type AppRole } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
@@ -23,6 +24,7 @@ type NavItem = {
 const NAV: NavItem[] = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard, end: true, group: "Workspace" },
   { to: "/team", label: "Team", icon: Users, group: "People", roles: ["super_admin", "ceo", "hr", "manager"] },
+  { to: "/time-dashboard", label: "Time Dashboard", icon: Clock, group: "People" },
   { to: "/performance", label: "Performance", icon: TrendingUp, group: "People" },
   { to: "/leave", label: "Leave", icon: Calendar, group: "People" },
   { to: "/attendance", label: "Attendance", icon: Clock, group: "People" },
@@ -32,6 +34,7 @@ const NAV: NavItem[] = [
   { to: "/workflows", label: "Workflows", icon: GitBranch, group: "Ops" },
   { to: "/documents", label: "Documents", icon: FileText, group: "Ops" },
   { to: "/reports", label: "Reports", icon: BarChart3, group: "Ops", roles: ["super_admin", "ceo", "finance", "hr"] },
+  { to: "/alyson-notetaker", label: "Alyson Notetaker", icon: Captions, group: "Ops" },
   { to: "/admin", label: "Admin", icon: Shield, group: "Admin", roles: ["super_admin"] },
   { to: "/help", label: "Help", icon: HelpCircle, group: "Admin" },
 ];

@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as WorkflowsRouteImport } from './routes/workflows'
+import { Route as TimeDashboardRouteImport } from './routes/time-dashboard'
 import { Route as TeamRouteImport } from './routes/team'
 import { Route as ReportsRouteImport } from './routes/reports'
 import { Route as PerformanceRouteImport } from './routes/performance'
@@ -20,10 +21,12 @@ import { Route as EquityRouteImport } from './routes/equity'
 import { Route as DocumentsRouteImport } from './routes/documents'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AttendanceRouteImport } from './routes/attendance'
+import { Route as AlysonNotetakerRouteImport } from './routes/alyson-notetaker'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as BonusRouteRouteImport } from './routes/bonus/route'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BonusIndexRouteImport } from './routes/bonus/index'
+import { Route as TimeDashboardUserIdRouteImport } from './routes/time-dashboard.$userId'
 import { Route as BonusSimulateRouteImport } from './routes/bonus/simulate'
 import { Route as BonusPlansRouteImport } from './routes/bonus/plans'
 import { Route as BonusAuditRouteImport } from './routes/bonus/audit'
@@ -32,6 +35,11 @@ import { Route as BonusApprovalsRouteImport } from './routes/bonus/approvals'
 const WorkflowsRoute = WorkflowsRouteImport.update({
   id: '/workflows',
   path: '/workflows',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TimeDashboardRoute = TimeDashboardRouteImport.update({
+  id: '/time-dashboard',
+  path: '/time-dashboard',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TeamRoute = TeamRouteImport.update({
@@ -84,6 +92,11 @@ const AttendanceRoute = AttendanceRouteImport.update({
   path: '/attendance',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AlysonNotetakerRoute = AlysonNotetakerRouteImport.update({
+  id: '/alyson-notetaker',
+  path: '/alyson-notetaker',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
@@ -103,6 +116,11 @@ const BonusIndexRoute = BonusIndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => BonusRouteRoute,
+} as any)
+const TimeDashboardUserIdRoute = TimeDashboardUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => TimeDashboardRoute,
 } as any)
 const BonusSimulateRoute = BonusSimulateRouteImport.update({
   id: '/simulate',
@@ -129,6 +147,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRouteRouteWithChildren
   '/admin': typeof AdminRoute
+  '/alyson-notetaker': typeof AlysonNotetakerRoute
   '/attendance': typeof AttendanceRoute
   '/auth': typeof AuthRoute
   '/documents': typeof DocumentsRoute
@@ -139,16 +158,19 @@ export interface FileRoutesByFullPath {
   '/performance': typeof PerformanceRoute
   '/reports': typeof ReportsRoute
   '/team': typeof TeamRoute
+  '/time-dashboard': typeof TimeDashboardRouteWithChildren
   '/workflows': typeof WorkflowsRoute
   '/bonus/approvals': typeof BonusApprovalsRoute
   '/bonus/audit': typeof BonusAuditRoute
   '/bonus/plans': typeof BonusPlansRoute
   '/bonus/simulate': typeof BonusSimulateRoute
+  '/time-dashboard/$userId': typeof TimeDashboardUserIdRoute
   '/bonus/': typeof BonusIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/admin': typeof AdminRoute
+  '/alyson-notetaker': typeof AlysonNotetakerRoute
   '/attendance': typeof AttendanceRoute
   '/auth': typeof AuthRoute
   '/documents': typeof DocumentsRoute
@@ -159,11 +181,13 @@ export interface FileRoutesByTo {
   '/performance': typeof PerformanceRoute
   '/reports': typeof ReportsRoute
   '/team': typeof TeamRoute
+  '/time-dashboard': typeof TimeDashboardRouteWithChildren
   '/workflows': typeof WorkflowsRoute
   '/bonus/approvals': typeof BonusApprovalsRoute
   '/bonus/audit': typeof BonusAuditRoute
   '/bonus/plans': typeof BonusPlansRoute
   '/bonus/simulate': typeof BonusSimulateRoute
+  '/time-dashboard/$userId': typeof TimeDashboardUserIdRoute
   '/bonus': typeof BonusIndexRoute
 }
 export interface FileRoutesById {
@@ -171,6 +195,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/bonus': typeof BonusRouteRouteWithChildren
   '/admin': typeof AdminRoute
+  '/alyson-notetaker': typeof AlysonNotetakerRoute
   '/attendance': typeof AttendanceRoute
   '/auth': typeof AuthRoute
   '/documents': typeof DocumentsRoute
@@ -181,11 +206,13 @@ export interface FileRoutesById {
   '/performance': typeof PerformanceRoute
   '/reports': typeof ReportsRoute
   '/team': typeof TeamRoute
+  '/time-dashboard': typeof TimeDashboardRouteWithChildren
   '/workflows': typeof WorkflowsRoute
   '/bonus/approvals': typeof BonusApprovalsRoute
   '/bonus/audit': typeof BonusAuditRoute
   '/bonus/plans': typeof BonusPlansRoute
   '/bonus/simulate': typeof BonusSimulateRoute
+  '/time-dashboard/$userId': typeof TimeDashboardUserIdRoute
   '/bonus/': typeof BonusIndexRoute
 }
 export interface FileRouteTypes {
@@ -194,6 +221,7 @@ export interface FileRouteTypes {
     | '/'
     | '/bonus'
     | '/admin'
+    | '/alyson-notetaker'
     | '/attendance'
     | '/auth'
     | '/documents'
@@ -204,16 +232,19 @@ export interface FileRouteTypes {
     | '/performance'
     | '/reports'
     | '/team'
+    | '/time-dashboard'
     | '/workflows'
     | '/bonus/approvals'
     | '/bonus/audit'
     | '/bonus/plans'
     | '/bonus/simulate'
+    | '/time-dashboard/$userId'
     | '/bonus/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/admin'
+    | '/alyson-notetaker'
     | '/attendance'
     | '/auth'
     | '/documents'
@@ -224,17 +255,20 @@ export interface FileRouteTypes {
     | '/performance'
     | '/reports'
     | '/team'
+    | '/time-dashboard'
     | '/workflows'
     | '/bonus/approvals'
     | '/bonus/audit'
     | '/bonus/plans'
     | '/bonus/simulate'
+    | '/time-dashboard/$userId'
     | '/bonus'
   id:
     | '__root__'
     | '/'
     | '/bonus'
     | '/admin'
+    | '/alyson-notetaker'
     | '/attendance'
     | '/auth'
     | '/documents'
@@ -245,11 +279,13 @@ export interface FileRouteTypes {
     | '/performance'
     | '/reports'
     | '/team'
+    | '/time-dashboard'
     | '/workflows'
     | '/bonus/approvals'
     | '/bonus/audit'
     | '/bonus/plans'
     | '/bonus/simulate'
+    | '/time-dashboard/$userId'
     | '/bonus/'
   fileRoutesById: FileRoutesById
 }
@@ -257,6 +293,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   BonusRouteRoute: typeof BonusRouteRouteWithChildren
   AdminRoute: typeof AdminRoute
+  AlysonNotetakerRoute: typeof AlysonNotetakerRoute
   AttendanceRoute: typeof AttendanceRoute
   AuthRoute: typeof AuthRoute
   DocumentsRoute: typeof DocumentsRoute
@@ -267,6 +304,7 @@ export interface RootRouteChildren {
   PerformanceRoute: typeof PerformanceRoute
   ReportsRoute: typeof ReportsRoute
   TeamRoute: typeof TeamRoute
+  TimeDashboardRoute: typeof TimeDashboardRouteWithChildren
   WorkflowsRoute: typeof WorkflowsRoute
 }
 
@@ -277,6 +315,13 @@ declare module '@tanstack/react-router' {
       path: '/workflows'
       fullPath: '/workflows'
       preLoaderRoute: typeof WorkflowsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/time-dashboard': {
+      id: '/time-dashboard'
+      path: '/time-dashboard'
+      fullPath: '/time-dashboard'
+      preLoaderRoute: typeof TimeDashboardRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/team': {
@@ -349,6 +394,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AttendanceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/alyson-notetaker': {
+      id: '/alyson-notetaker'
+      path: '/alyson-notetaker'
+      fullPath: '/alyson-notetaker'
+      preLoaderRoute: typeof AlysonNotetakerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/admin': {
       id: '/admin'
       path: '/admin'
@@ -376,6 +428,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/bonus/'
       preLoaderRoute: typeof BonusIndexRouteImport
       parentRoute: typeof BonusRouteRoute
+    }
+    '/time-dashboard/$userId': {
+      id: '/time-dashboard/$userId'
+      path: '/$userId'
+      fullPath: '/time-dashboard/$userId'
+      preLoaderRoute: typeof TimeDashboardUserIdRouteImport
+      parentRoute: typeof TimeDashboardRoute
     }
     '/bonus/simulate': {
       id: '/bonus/simulate'
@@ -428,10 +487,23 @@ const BonusRouteRouteWithChildren = BonusRouteRoute._addFileChildren(
   BonusRouteRouteChildren,
 )
 
+interface TimeDashboardRouteChildren {
+  TimeDashboardUserIdRoute: typeof TimeDashboardUserIdRoute
+}
+
+const TimeDashboardRouteChildren: TimeDashboardRouteChildren = {
+  TimeDashboardUserIdRoute: TimeDashboardUserIdRoute,
+}
+
+const TimeDashboardRouteWithChildren = TimeDashboardRoute._addFileChildren(
+  TimeDashboardRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   BonusRouteRoute: BonusRouteRouteWithChildren,
   AdminRoute: AdminRoute,
+  AlysonNotetakerRoute: AlysonNotetakerRoute,
   AttendanceRoute: AttendanceRoute,
   AuthRoute: AuthRoute,
   DocumentsRoute: DocumentsRoute,
@@ -442,6 +514,7 @@ const rootRouteChildren: RootRouteChildren = {
   PerformanceRoute: PerformanceRoute,
   ReportsRoute: ReportsRoute,
   TeamRoute: TeamRoute,
+  TimeDashboardRoute: TimeDashboardRouteWithChildren,
   WorkflowsRoute: WorkflowsRoute,
 }
 export const routeTree = rootRouteImport
